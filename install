@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+
+#########
+# setup #
+#########
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "${DIR}"
+
+if [ $(uname) = "Darwin" ]; then
+  MACOS=1
+else
+  MACOS=0
+fi
+
+indent() {
+  sed 's/^/  /'
+}
+
+start() {
+  printf "\e[1m${1} {\e[22m\n"
+}
+
+step() {
+  printf "\e[1m${1}\e[22m\n"
+}
+
+success() {
+  printf "\e[1m} ${1} ✓\e[0m\n"
+}
+
+failure() {
+  printf "\e[1m} ${1} 𝙓\e[0m\n"
+}
+
+end() {
+  printf "\e[1m} ${1} ✓\e[22m\n"
+}
+
+repo() {
+  local url=$1
+  local dir=$2
+  step "📦 ${url} → ${dir}"
+  if [ ! -d "${dir}" ]; then
+    git clone "${url}" "${dir}"
+  fi
+}
+
+copy() {
+  step "cp ${1} ${2}"
+  cp "${1}" "${2}"
+}
+
+link() {
+  step "ln -nfs ${1} ${2}"
+  ln -nfs "${1}" "${2}"
+}
+
+run() {
+  local name="${1}"
+  local command="${2}"
+
+  start "${name}"
+  if "${command}" 2> >(while read line; do printf "\e[01;31m${line//%/%%}\e[0m\n"; done) | indent; then
+    success "${name}"
+    return 0
+  else
+    failure "${name}"
+    return 1
+  fi
+}
+
+
+#######
+# fzf #
+#######
+
+setup_fzf() {
+  FZF_HOME="${HOME}/.fzf"
+  run fzf:repo setup_fzf_repo
+  run fzf:install setup_fzf_install
+}
+
+setup_fzf_repo() {
+  repo https://github.com/junegunn/fzf.git "${FZF_HOME}"
+}
+
+setup_fzf_install() {
+  "${FZF_HOME}/install" \
+    --key-bindings \
+    --completion \
+    --no-update-rc
+}
+
+
+#######
+# zsh #
+#######
+
+setup_zsh() {
+  run zsh:config setup_zsh_config
+  run zsh:syntax-highlighting setup_zsh_syntax_highlighting
+  run zsh:prompt setup_zsh_prompt
+}
+
+setup_zsh_config() {
+  copy .zshrc ~/.zshrc
+  mkdir -p ~/.zfunctions
+}
+
+setup_zsh_syntax_highlighting() {
+  repo https://github.com/zsh-users/zsh-syntax-highlighting.git "${HOME}/.zsh-syntax-highlighting"
+}
+
+setup_zsh_prompt() {
+  PURE_PROMPT_HOME="${HOME}/.pure-prompt"
+  run zsh:prompt:repo setup_zsh_prompt_repo
+  run zsh:prompt:install setup_zsh_prompt_install
+}
+
+setup_zsh_prompt_repo() {
+  repo https://github.com/sindresorhus/pure.git "${PURE_PROMPT_HOME}"
+}
+
+setup_zsh_prompt_install() {
+  link "${PURE_PROMPT_HOME}/pure.zsh" "${HOME}/.zfunctions/prompt_pure_setup"
+  link "${PURE_PROMPT_HOME}/async.zsh" "${HOME}/.zfunctions/async"
+}
+
+
+#########
+# rbenv #
+#########
+
+setup_rbenv() {
+  RBENV_HOME="${HOME}/.rbenv"
+  run rbenv:repo setup_rbenv_repo
+}
+
+setup_rbenv_repo() {
+  repo https://github.com/rbenv/rbenv.git "${RBENV_HOME}"
+}
+
+
+##########
+# vscode #
+##########
+
+setup_vscode() {
+  if [ "${MACOS}" = 1 ]; then
+    defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+  fi
+}
+
+
+############
+# autojump #
+############
+
+setup_autojump() {
+  AUTOJUMP_HOME="${HOME}/.autojump-repo"
+  run autojump:repo setup_autojump_repo
+  run autojump:install setup_autojump_install
+}
+
+setup_autojump_repo() {
+  repo https://github.com/wting/autojump.git "${AUTOJUMP_HOME}"
+}
+
+setup_autojump_install() {
+  (
+    cd "${AUTOJUMP_HOME}"
+    ./install.py
+  )
+}
+
+
+##################
+# run everything #
+##################
+
+run zsh setup_zsh
+run fzf setup_fzf
+run vscode setup_vscode
+run autojump setup_autojump
