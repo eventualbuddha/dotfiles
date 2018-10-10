@@ -186,3 +186,4 @@ run zsh setup_zsh
 run fzf setup_fzf
 run vscode setup_vscode
 run autojump setup_autojump
+run rbenv setup_rbenv
