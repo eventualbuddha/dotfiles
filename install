@@ -51,7 +51,7 @@ repo() {
 
 copy() {
   step "cp ${1} ${2}"
-  cp "${1}" "${2}"
+  cp -r "${1}" "${2}"
 }
 
 link() {
@@ -131,6 +131,16 @@ setup_zsh_prompt_install() {
 }
 
 
+#######
+# vim #
+#######
+
+setup_vim() {
+  copy .vim ~/
+  copy .vimrc ~/
+}
+
+
 #########
 # rbenv #
 #########
@@ -183,6 +193,7 @@ setup_autojump_install() {
 ##################
 
 run zsh setup_zsh
+run vim setup_vim
 run fzf setup_fzf
 run vscode setup_vscode
 run autojump setup_autojump
