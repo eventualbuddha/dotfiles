@@ -15,6 +15,15 @@ fpath=( "$HOME/.zfunctions" $fpath )
 export PATH="${HOME}/bin:${PATH}"
 
 
+###########
+# aliases #
+###########
+
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+
 #########
 # rbenv #
 #########
