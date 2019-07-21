@@ -1,0 +1,51 @@
+#!/bin/bash
+
+dir=${PWD}
+bin_install_root="${HOME}/.bin"
+
+if [ $# -lt 4 ]; then
+  echo "usage: ${0} PACKAGE VERSION_FILE BIN_NAME -- [ARG ...]" >&2
+  exit 1
+fi
+
+bin_package=${1}; shift
+version_file_name=${1}; shift
+bin_name=${1}; shift
+
+if [ "${1}" != "--" ]; then
+  echo "error: missing argument separator (--) after PACKAGE VERSION_FILE BIN_NAME" >&2
+  exit 1
+fi
+shift
+
+while true; do
+  version_file_path="${dir}/${version_file_name}"
+
+  if [ -f "${version_file_path}" ]; then
+    version=$(cat "${version_file_path}")
+
+    if [[ "${version}" = */* ]]; then
+      echo "error: invalid version: ${version}" >&2
+      exit 1
+    fi
+
+    bin_install_path="${bin_install_root}/${bin_package}/${version}"
+
+    if [ -d "${bin_install_path}" ]; then
+      export PATH="${bin_install_path}/bin:${PATH}"
+      exec "${bin_install_path}/bin/$(basename "${bin_name}")" "$@"
+    else
+      echo "error: no version ${bin_install_path} found" >&2
+      exit 1
+    fi
+  fi
+
+  dir="$(dirname "${dir}")"
+
+  if [ "${dir}" = "/" ]; then
+    break
+  fi
+done
+
+echo "error: no ${version_file_name} found" >&2
+exit 1

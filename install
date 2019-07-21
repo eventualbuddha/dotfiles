@@ -141,6 +141,26 @@ setup_vim() {
 }
 
 
+############
+# binstubs #
+############
+
+setup_binstubs() {
+  link "${PWD}/bin/run-bin-with-version-file" ~/bin/
+
+  link "${PWD}/bin/node" ~/bin/
+  link "${PWD}/bin/npm" ~/bin/
+  link "${PWD}/bin/npx" ~/bin/
+  link "${PWD}/bin/yarn" ~/bin/
+
+  setup_version_files
+}
+
+setup_version_files() {
+  link "${PWD}/version-files/.node-version" ~/
+  link "${PWD}/version-files/.yarn-version" ~/
+}
+
 #########
 # rbenv #
 #########
@@ -198,3 +218,4 @@ run fzf setup_fzf
 run vscode setup_vscode
 run autojump setup_autojump
 run rbenv setup_rbenv
+run binstubs setup_binstubs
