@@ -107,7 +107,7 @@ setup_zsh() {
 }
 
 setup_zsh_config() {
-  copy .zshrc ~/.zshrc
+  link "${PWD}/.zshrc" ~/.zshrc
   mkdir -p ~/.zfunctions
 }
 
@@ -136,8 +136,8 @@ setup_zsh_prompt_install() {
 #######
 
 setup_vim() {
-  copy .vim ~/
-  copy .vimrc ~/
+  link "${PWD}/.vim" ~/
+  link "${PWD}/.vimrc" ~/
 }
 
 
