@@ -2,8 +2,40 @@
 
 set -euo pipefail
 
-version=${1}
+version=
+set_lts=false
 architecture=
+
+while [ $# -gt 0 ]; do
+  case "${1}" in
+    -h|--help)
+      echo "usage: install-node [--lts] <version>"
+      echo
+      echo "Installs Node.js with the specified <version> and optionally aliases"
+      echo "it to 'lts' given the '--lts' flag."
+      exit 0
+      ;;
+
+    --lts)
+      set_lts=true
+      ;;
+
+    -*)
+      echo "✘ unexpected argument: ${1}" >&2
+      exit 1
+      ;;
+
+    *)
+      if [ -n "${version}" ]; then
+        echo "✘ unexpected argument after version: ${1}" >&2
+        exit 1
+      fi
+      version="${1}"
+      ;;
+  esac
+
+  shift
+done
 
 if [ -z "${version}" ]; then
   echo "✘ missing version" >&2
@@ -27,4 +59,11 @@ scripts_directory="${0:a:h}"
 if [ "$("${HOME}/.bin/node/${version}/bin/node" -v 2>/dev/null)" != "v${version}" ]; then
   echo "✘ verification of node ${version} failed" >&2
   exit 1
+fi
+
+if [ "${set_lts}" = "true" ]; then
+  "${scripts_directory}/alias-package" \
+    node \
+    "${version}" \
+    lts
 fi
