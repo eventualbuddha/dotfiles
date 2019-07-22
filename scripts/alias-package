@@ -1,0 +1,19 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+package=${1}
+version=${2}
+version_alias=${3}
+
+bin_install_root="${HOME}/.bin"
+bin_install_target="${bin_install_root}/${package}/${version}"
+bin_install_alias="${bin_install_root}/${package}/${version_alias}"
+
+if [ ! -d "${bin_install_target}" ]; then
+  echo "✘ cannot alias to non-existent package version (${bin_install_target})" >&2
+  exit 1
+fi
+
+ln -nfs "${bin_install_target}" "${bin_install_alias}"
+echo "✓ aliased ${package} '${version_alias}' → '${version}'"

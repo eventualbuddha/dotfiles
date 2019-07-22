@@ -1,0 +1,24 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+package=${1}
+version=${2}
+tarball_url=${3}
+
+bin_install_root="${HOME}/.bin"
+bin_install_target="${bin_install_root}/${package}/${version}"
+
+if [ -d "${bin_install_target}" ]; then
+  echo "✓ ${package} ${version} already installed at ${bin_install_target}"
+else
+  echo "📦 installing ${package} ${version} at ${bin_install_target}"
+  mkdir -p "${bin_install_target}"
+  curl \
+    --silent \
+    --location \
+    --output - \
+    "${tarball_url}" \
+  | tar xz --strip-components 1 -C "${bin_install_target}"
+  echo "✓ ${package} ${version} installed at ${bin_install_target}"
+fi

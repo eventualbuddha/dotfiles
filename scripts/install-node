@@ -1,0 +1,30 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+version=${1}
+architecture=
+
+if [ -z "${version}" ]; then
+  echo "✘ missing version" >&2
+  exit 1
+fi
+
+if [ "$(uname)" = "Darwin" ]; then
+  architecture="darwin-x64"
+else
+  architecture="linux-x64"
+fi
+
+tarball_url="https://nodejs.org/dist/v${version}/node-v${version}-${architecture}.tar.gz"
+
+scripts_directory="${0:a:h}"
+"${scripts_directory}/install-package" \
+  node \
+  "${version}" \
+  "${tarball_url}"
+
+if [ "$("${HOME}/.bin/node/${version}/bin/node" -v 2>/dev/null)" != "v${version}" ]; then
+  echo "✘ verification of node ${version} failed" >&2
+  exit 1
+fi
