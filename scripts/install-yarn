@@ -1,0 +1,82 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+latest=false
+version=
+
+usage() {
+  echo "usage: install-yarn (--latest|<version>)"
+}
+
+while [ $# -gt 0 ]; do
+  case "${1}" in
+    -h|--help)
+      usage
+      echo
+      echo "Installs either the latest yarn version or a specific one."
+      exit 0
+      ;;
+
+    --latest)
+      if [ -n "${version}" ]; then
+        echo "✘ cannot specify both a version and '--latest'" >&2
+        exit 1
+      fi
+      latest=true
+      ;;
+
+    -*)
+      echo "✘ unexpected argument: ${1}" >&2
+      exit 1
+      ;;
+
+    *)
+      if [ "${latest}" = "true" ]; then
+        echo "✘ cannot specify both a version and '--latest'" >&2
+        exit 1
+      fi
+      version="${1}"
+      ;;
+  esac
+
+  shift
+done
+
+if [ "${latest}" = "true" ]; then
+  latest_yarn_install_url=$(curl \
+    --location \
+    --silent \
+    --max-redirs 1 \
+    --write-out %{url_effective} \
+    --output /dev/null \
+    https://yarnpkg.com/latest.tar.gz || echo)
+
+  if [ -z "${latest_yarn_install_url}" ]; then
+    echo "✘ could not determine latest yarn version" >&2
+    exit 1
+  fi
+
+  latest_yarn_install_filename=$(basename "${latest_yarn_install_url}" .tar.gz)
+  version=${latest_yarn_install_filename#yarn-v}
+fi
+
+if [ -z "${version}" ]; then
+  usage >&2
+  exit 1
+fi
+
+tarball_url="https://github.com/yarnpkg/yarn/releases/download/v${version}/yarn-v${version}.tar.gz"
+scripts_directory=${0:a:h}
+
+"${scripts_directory}/install-package" \
+  yarn \
+  "${version}" \
+  "${tarball_url}"
+
+if [ "${latest}" = "true" ]; then
+  "${scripts_directory}/alias-package" \
+    yarn \
+    "${version}" \
+    latest
+fi
