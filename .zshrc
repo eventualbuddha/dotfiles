@@ -42,6 +42,7 @@ HISTDUP=erase               # Erase duplicates in the history file
 setopt appendhistory        # Append history to the history file (no overwriting)
 setopt sharehistory         # Share history across terminals
 setopt incappendhistory     # Immediately append to the history file, not just when a term is killed
+setopt HIST_IGNORE_ALL_DUPS # Delete old recorded entry if new entry is a duplicate.
 
 
 #################
