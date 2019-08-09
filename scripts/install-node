@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+cmd=$(basename ${0})
+
 version=
 set_lts=false
 architecture=
@@ -9,9 +11,9 @@ architecture=
 while [ $# -gt 0 ]; do
   case "${1}" in
     -h|--help)
-      echo "usage: install-node [--lts] <version>"
+      echo "usage: ${cmd} [--lts] <version>"
       echo
-      echo "Installs Node.js with the specified <version> and optionally aliases"
+      echo "Manages Node.js installs with the specified <version> and optionally aliases"
       echo "it to 'lts' given the '--lts' flag."
       exit 0
       ;;
@@ -48,22 +50,39 @@ else
   architecture="linux-x64"
 fi
 
-tarball_url="https://nodejs.org/dist/v${version}/node-v${version}-${architecture}.tar.gz"
-
 scripts_directory="${0:a:h}"
-"${scripts_directory}/install-package" \
-  node \
-  "${version}" \
-  "${tarball_url}"
 
-if [ "$("${HOME}/.bin/node/${version}/bin/node" -v 2>/dev/null)" != "v${version}" ]; then
-  echo "✘ verification of node ${version} failed" >&2
-  exit 1
-fi
+if [ "${cmd}" = "install-node" ]; then
+  tarball_url="https://nodejs.org/dist/v${version}/node-v${version}-${architecture}.tar.gz"
 
-if [ "${set_lts}" = "true" ]; then
-  "${scripts_directory}/alias-package" \
+  "${scripts_directory}/install-package" \
     node \
     "${version}" \
-    lts
+    "${tarball_url}"
+
+  if [ "$("${HOME}/.bin/node/${version}/bin/node" -v 2>/dev/null)" != "v${version}" ]; then
+    echo "✘ verification of node ${version} failed" >&2
+    exit 1
+  fi
+
+  if [ "${set_lts}" = "true" ]; then
+    "${scripts_directory}/alias-package" \
+      node \
+      "${version}" \
+      lts
+  fi
+elif [ "${cmd}" = "uninstall-node" ]; then
+  "${scripts_directory}/uninstall-package" \
+    node \
+    "${version}"
+  
+  if [ "${set_lts}" = "true" ]; then
+    "${scripts_directory}/unalias-package" \
+      node \
+      "${version}" \
+      lts
+  fi
+else
+  echo "✘ unknown command name: ${cmd}" >&2
+  exit 1
 fi

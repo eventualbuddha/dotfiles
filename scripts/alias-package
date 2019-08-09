@@ -2,18 +2,54 @@
 
 set -euo pipefail
 
-package=${1}
-version=${2}
-version_alias=${3}
+cmd=$(basename "${0}")
+package=${1:-}
+version=${2:-}
+version_alias=${3:-}
 
-bin_install_root="${HOME}/.bin"
-bin_install_target="${bin_install_root}/${package}/${version}"
-bin_install_alias="${bin_install_root}/${package}/${version_alias}"
-
-if [ ! -d "${bin_install_target}" ]; then
-  echo "✘ cannot alias to non-existent package version (${bin_install_target})" >&2
+if [ -z "${package}" ]; then
+  echo "✘ missing package" >&2
   exit 1
 fi
 
-ln -nfs "${bin_install_target}" "${bin_install_alias}"
-echo "✓ aliased ${package} '${version_alias}' → '${version}'"
+if [ -z "${version}" ]; then
+  echo "✘ missing version" >&2
+  exit 1
+fi
+
+bin_install_root="${HOME}/.bin"
+
+if [ "${cmd}" = "alias-package" ]; then
+  bin_install_target="${bin_install_root}/${package}/${version}"
+  bin_install_alias="${bin_install_root}/${package}/${version_alias}"
+
+  if [ -z "${version_alias}" ]; then
+    echo "✘ missing version alias" >&2
+    exit 1
+  fi
+
+  if [ ! -d "${bin_install_target}" ]; then
+    echo "✘ cannot alias to non-existent package version (${bin_install_target})" >&2
+    exit 1
+  fi
+
+  ln -nfs "${bin_install_target}" "${bin_install_alias}"
+  echo "✓ aliased ${package} '${version_alias}' → '${version}'"
+elif [ "${cmd}" = "unalias-package" ]; then
+  bin_install_alias="${bin_install_root}/${package}/${version}"
+
+  if [ -L "${bin_install_alias}" ]; then
+    local former_target=$(readlink "${bin_install_alias}")
+    rm "${bin_install_alias}"
+    echo "✓ unaliased ${package} '${version}' (was '${former_target}')"
+  elif [ -e "${bin_install_alias}" ]; then
+    echo "✘ cannot remove non-alias (${bin_install_alias})" >&2
+    exit 1
+  else
+    echo "✓ alias not found, nothing to do (${bin_install_alias})" >&2
+    exit 1
+  fi
+else
+  echo "✘ unknown command name: ${cmd}" >&2
+  exit 1
+fi
