@@ -1,0 +1,111 @@
+#!/usr/bin/env zsh
+
+set -euo pipefail
+
+git-default-branch() {
+  local git_dir="$(git rev-parse --git-dir)"
+  local git_default_branch_file="${git_dir}/.git-default-branch"
+
+  if [ ! -f "${git_default_branch_file}" ]; then
+    echo ${$(git symbolic-ref refs/remotes/origin/HEAD)#refs/remotes/origin/} > "${git_default_branch_file}"
+  fi
+
+  cat "${git_default_branch_file}"
+}
+
+is-git-ref-eq-sha() {
+  if [ "$(git rev-parse "${1}" 2>/dev/null)" = "${2}" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+git-branch-exists() {
+  if [ "$(git rev-parse "${1}" 2>/dev/null)" = "${1}" ]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+git-checkout-if-needed() {
+  local branch="${1}"
+
+  if [ "${$(git symbolic-ref HEAD)#refs/heads/}" != "${branch}" ]; then
+    git checkout "${branch}"
+  fi
+}
+
+ensure-git-remote-with-url() {
+  local remote="${1}"
+  local url="${2}"
+
+  if [ "$(git remote get-url "${remote}" 2>/dev/null)" != "${url}" ]; then
+    git remote remove "${remote}" >/dev/null 2>&1 || true
+    git remote add "${remote}" "${url}"
+  fi
+}
+
+if [ $# = 0 ]; then
+  git checkout $(git-default-branch)
+elif [[ "${1}" =~ '^https://github.com/([-_0-9a-zA-Z]+)/([-_0-9a-zA-Z]+)/pull/([0-9]+)$' ]]; then
+  local owner="${match[1]}"
+  local repo="${match[2]}"
+  local pr="${match[3]}"
+  local branch="pr-${pr}"
+
+  local tmpfile="/tmp/$$-pr-${pr}.json"
+  curl --silent "https://api.github.com/repos/${owner}/${repo}/pulls/${pr}" > "${tmpfile}"
+  local base_repo_clone_url_suffix="${owner}/$(json-get base.repo.name < "${tmpfile}").git"
+  local local_repo_clone_url=$(git remote get-url origin)
+
+  if [[ "${local_repo_clone_url}" != *"${base_repo_clone_url_suffix}" ]]; then
+    echo "✘ origin URL does not match:" >&2
+    echo "  found:  ${local_repo_clone_url}" >&2
+    echo "  wanted: *${base_repo_clone_url_suffix}" >&2
+    exit 1
+  fi
+
+  # ref: branch name on the head repo, e.g. "typo-fix".
+  local ref=$(json-get head.ref < "${tmpfile}")
+
+  # sha: git hash of ref, e.g. "abc123…".
+  local sha=$(json-get head.sha < "${tmpfile}")
+
+  # head_owner: user or org name owning the head repo, e.g. "eventualbuddha".
+  local head_owner=$(json-get head.repo.owner.login < "${tmpfile}")
+
+  # fetch_remote: local name of the remote to fetch from, e.g. "origin".
+  local fetch_remote=origin
+
+  # Use "origin" if head and base are the same, otherwise name the remote after
+  # the user or organization owning the head repo.
+  if [ "${head_owner}" != "${owner}" ]; then
+    fetch_remote="${head_owner}"
+  fi
+
+  if is-git-ref-eq-sha "${branch}" "${sha}"; then
+    local head_repo_clone_url=$(json-get head.repo.clone_url < "${tmpfile}")
+
+    ensure-git-remote-with-url "${fetch_remote}" "${head_repo_clone_url}"
+
+    if ! is-git-ref-eq-sha "refs/remotes/${fetch_remote}/${ref}" "${sha}"; then
+      git fetch "${fetch_remote}"
+    fi
+  fi
+
+  if ! git-branch-exists "${branch}"; then
+    # Create and checkout the branch, setting up tracking properly.
+    git checkout -b "${branch}" "${fetch_remote}/${ref}"
+  else
+    # Branch already exists, just sync it up.
+    git-checkout-if-needed "${branch}"
+
+    if ! is-git-ref-eq-sha "${branch}" "${sha}"; then
+      git pull --rebase
+    fi
+  fi
+else
+  git checkout "$@"
+fi

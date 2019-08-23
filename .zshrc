@@ -74,25 +74,7 @@ autoload -U compinit && compinit -u
 
 alias gs="git status"
 alias gd="git diff"
-
-function gco() {
-  if [ $# = 0 ]; then
-    git checkout $(git-default-branch)
-  else
-    git checkout "$@"
-  fi
-}
-
-function git-default-branch() {
-  local git_dir="$(git rev-parse --git-dir)"
-  local git_default_branch_file="${git_dir}/.git-default-branch"
-
-  if [ ! -f "${git_default_branch_file}" ]; then
-    git symbolic-ref refs/remotes/origin/HEAD | sed "s@^refs/remotes/origin/@@" > "${git_default_branch_file}"
-  fi
-
-  cat "${git_default_branch_file}"
-}
+alias gco="git-checkout-plus"
 
 
 ###########################

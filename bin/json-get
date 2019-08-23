@@ -1,0 +1,88 @@
+#!/usr/bin/env zsh
+
+set -euo pipefail
+
+pattern="${1:-}"
+
+if [ -z "${pattern}" ] || [ "${pattern}" = '-h' ] || [ "${pattern}" = '--help' ]; then
+  echo "usage: json-get PATTERN"
+  echo
+  echo "# from a file"
+  echo "$ json-get dependencies.react < package.json"
+  echo "^16.9.0"
+  echo
+  echo "# from literal text"
+  echo "$ echo '{\"people\": [\"Brian\", \"Madeline\"]}' | json-get people.0"
+  echo "Brian"
+
+  exit
+fi
+
+if [[ $(whence node) != '' && $(node -v 2>/dev/null) != '' ]]; then
+  xargs -0 node -e "
+    const pattern = process.argv[1];
+    const json = process.argv[2];
+    const object = JSON.parse(json);
+
+    print(
+      pattern.split('.').reduce(
+        (obj, key) =>
+          typeof obj !== 'undefined' && Object.prototype.hasOwnProperty.call(obj, key)
+          ? obj[key]
+          : undefined,
+        object
+      )
+    );
+
+    function print(data) {
+      if (Object.prototype.toString.call(data) === '[object Object]') {
+        for (const key of Object.getOwnPropertyNames(data)) {
+          print(key);
+          print(data[key]);
+        }
+      } else if (typeof data === 'string') {
+        process.stdout.write(data + '\n');
+      } else if (
+        typeof data === 'number' ||
+        typeof data === 'bigint' ||
+        typeof data === 'boolean') {
+        print('' + data);
+      } else if (Array.isArray(data)) {
+        for (const element of data) {
+          print(element);
+        }
+      }
+    }
+  " "${pattern}"
+elif [[ $(whence ruby) != '' && $(ruby -v 2>/dev/null) != '' ]]; then
+  xargs -0 ruby -rjson -e "
+    pattern = ARGV[0]
+    json = ARGV[1]
+    object = JSON.parse(json)
+
+    def print(data)
+      case data
+      when Array
+        data.each {|element| print(element) }
+      when Hash
+        data.each {|key, value| print(key); print(value) }
+      else
+        STDOUT.puts data
+      end
+    end
+
+    print(
+      pattern.split('.').reduce(object) do |obj, key|
+        case obj
+        when Array
+          obj[key.to_i]
+        when Hash
+          obj[key]
+        end
+      end
+    )
+  " "${pattern}"
+else
+  echo "✘ unable to find a suitable JSON parser, please install node or ruby" >&2
+  exit 1
+fi

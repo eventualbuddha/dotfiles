@@ -141,6 +141,15 @@ setup_vim() {
 }
 
 
+#######
+# git #
+#######
+
+setup_git() {
+  link "${PWD}/.gitconfig" ~/
+}
+
+
 ############
 # binstubs #
 ############
@@ -161,6 +170,17 @@ setup_binstubs() {
 setup_version_files() {
   link "${PWD}/version-files/.node-version" ~/
   link "${PWD}/version-files/.yarn-version" ~/
+}
+
+############
+# commands #
+############
+
+setup_commands() {
+  mkdir -p ~/bin
+
+  link "${PWD}/bin/git-checkout-plus" ~/bin/
+  link "${PWD}/bin/json-get" ~/bin/
 }
 
 #########
@@ -216,8 +236,10 @@ setup_autojump_install() {
 
 run zsh setup_zsh
 run vim setup_vim
+run git setup_git
 run fzf setup_fzf
 run vscode setup_vscode
 run autojump setup_autojump
 run rbenv setup_rbenv
 run binstubs setup_binstubs
+run commands setup_commands
