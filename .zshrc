@@ -14,6 +14,9 @@ fpath=( "$HOME/.zfunctions" $fpath )
 # local scripts
 export PATH="${HOME}/bin:${PATH}"
 
+# yarn global binaries
+export PATH="${HOME}/.yarn/bin:${PATH}"
+
 
 ###########
 # aliases #
