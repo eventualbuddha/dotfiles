@@ -2,52 +2,71 @@
 
 set -euo pipefail
 
-dir=${PWD}
 bin_install_root="${HOME}/.bin"
 
-if [ $# -lt 4 ]; then
-  echo "usage: ${0} PACKAGE VERSION_FILE BIN_NAME -- [ARG ...]" >&2
+if [ $# -lt 5 ]; then
+  echo "usage: ${0} PACKAGE VERSION_FILE VERSION_ENV BIN_NAME -- [ARG ...]" >&2
   exit 1
 fi
 
 bin_package=${1}; shift
 version_file_name=${1}; shift
+version_env_name=${1}; shift
 bin_name=${1}; shift
 
 if [ "${1}" != "--" ]; then
-  echo "error: missing argument separator (--) after PACKAGE VERSION_FILE BIN_NAME" >&2
+  echo "error: missing argument separator (--) after PACKAGE VERSION_FILE VERSION_ENV BIN_NAME" >&2
   exit 1
 fi
 shift
 
-while true; do
-  version_file_path="${dir}/${version_file_name}"
+get_version_from_version_file() {
+  local dir=${PWD}
 
-  if [ -f "${version_file_path}" ]; then
-    version=$(cat "${version_file_path}")
+  while true; do
+    version_file_path="${dir}/${version_file_name}"
 
-    if [[ "${version}" = */* ]]; then
-      echo "error: invalid version: ${version}" >&2
-      exit 1
+    if [ -f "${version_file_path}" ]; then
+      version=$(cat "${version_file_path}")
+
+      if [[ "${version}" = */* ]]; then
+        echo "error: invalid version: ${version}" >&2
+        exit 1
+      fi
+
+      echo "${version}"
+      break
     fi
 
-    bin_install_path="${bin_install_root}/${bin_package}/${version}"
+    dir="$(dirname "${dir}")"
 
-    if [ -d "${bin_install_path}" ]; then
-      export PATH="${bin_install_path}/bin:${PATH}"
-      exec "${bin_install_path}/bin/$(basename "${bin_name}")" "$@"
-    else
-      echo "error: no version ${bin_install_path} found" >&2
-      exit 1
+    if [ "${dir}" = "/" ]; then
+      break
     fi
-  fi
+  done
+}
 
-  dir="$(dirname "${dir}")"
+version=
 
-  if [ "${dir}" = "/" ]; then
-    break
-  fi
-done
+if [ -n "${version_env_name}" ]; then
+  version=$(printenv "${version_env_name}" || true)
+fi
 
-echo "error: no ${version_file_name} found" >&2
-exit 1
+if [ -z "${version}" ]; then
+  version=$(get_version_from_version_file)
+fi
+
+if [ -z "${version}" ]; then
+  echo "error: no version found in ${version_file_name} files in ${PWD} or ancestors" >&2
+  exit 1
+fi
+
+bin_install_path="${bin_install_root}/${bin_package}/${version}"
+
+if [ -d "${bin_install_path}" ]; then
+  export PATH="${bin_install_path}/bin:${PATH}"
+  exec "${bin_install_path}/bin/$(basename "${bin_name}")" "$@"
+else
+  echo "error: version ${version} expected at ${bin_install_path} but was not found" >&2
+  exit 1
+fi
