@@ -93,6 +93,8 @@ setup_fzf_install() {
     --key-bindings \
     --completion \
     --no-update-rc
+  link "${FZF_HOME}/bin/fzf" ~/bin/
+  link "${FZF_HOME}/bin/fzf-tmux" ~/bin/
 }
 
 
