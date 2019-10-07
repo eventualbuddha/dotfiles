@@ -5,3 +5,5 @@ fetch = +refs/pull/*:refs/remotes/origin/pull/*
 [user]
 	name = Brian Donovan
 	email = 1938+eventualbuddha@users.noreply.github.com
+[merge]
+	conflictstyle = diff3
