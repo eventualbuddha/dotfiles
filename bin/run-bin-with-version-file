@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+source ~/bin/_semver.sh
+
 bin_install_root="${HOME}/.bin"
 
 if [ $# -lt 5 ]; then
@@ -61,12 +63,30 @@ if [ -z "${version}" ]; then
   exit 1
 fi
 
+if is-semver-pattern "${version}"; then
+  highest_version_match=
+
+  for path in "${bin_install_root}/${bin_package}"/*; do
+    candidate="$(basename "${path}")"
+
+    if semver-match "${version}" "${candidate}"; then
+      if [ -z "${highest_version_match}" ] || semver-gt "${candidate}" "${highest_version_match}"; then
+        highest_version_match="${candidate}"
+      fi
+    fi
+  done
+
+  if [ -n "${highest_version_match}" ]; then
+    version="${highest_version_match}"
+  fi
+fi
+
 bin_install_path="${bin_install_root}/${bin_package}/${version}"
 
 if [ -d "${bin_install_path}" ]; then
   export PATH="${bin_install_path}/bin:${PATH}"
   exec "${bin_install_path}/bin/$(basename "${bin_name}")" "$@"
 else
-  echo "error: version ${version} expected at ${bin_install_path} but was not found" >&2
+  echo "error: version matching '${version}' could not be found" >&2
   exit 1
 fi

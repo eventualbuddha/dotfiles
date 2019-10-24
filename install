@@ -160,6 +160,7 @@ setup_binstubs() {
   mkdir -p ~/bin
 
   link "${PWD}/bin/run-bin-with-version-file" ~/bin/
+  link "${PWD}/bin/_semver.sh" ~/bin/
 
   link "${PWD}/bin/node" ~/bin/
   link "${PWD}/bin/npm" ~/bin/
