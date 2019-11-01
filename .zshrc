@@ -17,6 +17,9 @@ export PATH="${HOME}/bin:${PATH}"
 # yarn global binaries
 export PATH="${HOME}/.yarn/bin:${PATH}"
 
+# set editor to vim
+export EDITOR=vim
+
 
 ###########
 # aliases #
