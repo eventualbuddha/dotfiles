@@ -75,6 +75,14 @@ run() {
 
 
 #######
+# bin #
+#######
+
+setup_bin() {
+  mkdir -p ~/bin
+}
+
+#######
 # fzf #
 #######
 
@@ -237,6 +245,7 @@ setup_autojump_install() {
 # run everything #
 ##################
 
+run bin setup_bin
 run zsh setup_zsh
 run vim setup_vim
 run git setup_git
