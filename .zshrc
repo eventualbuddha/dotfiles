@@ -17,8 +17,9 @@ export PATH="${HOME}/bin:${PATH}"
 # yarn global binaries
 export PATH="${HOME}/.yarn/bin:${PATH}"
 
-# set editor to vim
+# editor config
 export EDITOR=vim
+
 
 ################
 # key bindings #
@@ -47,6 +48,7 @@ eval "$(rbenv init -)"
 #########################
 # History Configuration #
 #########################
+
 HISTSIZE=5000               # How many lines of history to keep in memory
 HISTFILE=~/.zsh_history     # Where to save history to disk
 SAVEHIST=5000               # Number of history entries to save to disk
