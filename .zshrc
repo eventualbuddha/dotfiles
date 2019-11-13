@@ -25,8 +25,7 @@ export EDITOR=vim
 # key bindings #
 ################
 
-bindkey '^P' up-line-or-search
-bindkey "^N" down-line-or-search
+bindkey -e
 
 ###########
 # aliases #
