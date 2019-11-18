@@ -141,6 +141,15 @@ setup_zsh_prompt_install() {
 }
 
 
+########
+# tmux #
+########
+
+setup_tmux() {
+  link "${PWD}/.tmux.conf" ~/
+}
+
+
 #######
 # vim #
 #######
@@ -247,6 +256,7 @@ setup_autojump_install() {
 
 run bin setup_bin
 run zsh setup_zsh
+run tmux setup_tmux
 run vim setup_vim
 run git setup_git
 run fzf setup_fzf
