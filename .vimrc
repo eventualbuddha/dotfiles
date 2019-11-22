@@ -107,3 +107,8 @@ endif
 " Clear gutter background to make it work on light or dark backgrounds.
 highlight clear LineNr
 highlight clear SignColumn
+
+" Stop writing swap et al to local folders.
+set backupdir=/tmp//
+set directory=/tmp//
+set undodir=/tmp//
