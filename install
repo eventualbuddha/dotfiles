@@ -169,6 +169,28 @@ setup_git() {
 }
 
 
+########
+# curl #
+########
+
+setup_curl() {
+  if command -v curl >/dev/null 2>&1; then
+    return
+  fi
+
+  if command -v apt-get >/dev/null 2>&1; then
+    sudo apt-get install -y curl
+  elif command -v brew >/dev/null 2>&1; then
+    brew install curl
+  fi
+
+  if ! command -v curl >/dev/null 2>&1; then
+    failure "unable to install curl"
+    return 1
+  fi
+}
+
+
 ############
 # binstubs #
 ############
@@ -255,6 +277,7 @@ setup_autojump_install() {
 ##################
 
 run bin setup_bin
+run curl setup_curl
 run zsh setup_zsh
 run tmux setup_tmux
 run vim setup_vim
