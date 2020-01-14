@@ -73,6 +73,25 @@ run() {
   fi
 }
 
+install-package() {
+  local pkg="$1"
+
+  if command -v "$pkg" >/dev/null 2>&1; then
+    return
+  fi
+
+  if command -v apt-get >/dev/null 2>&1; then
+    sudo apt-get install -y "$pkg"
+  elif command -v brew >/dev/null 2>&1; then
+    brew install "$pkg"
+  fi
+
+  if ! command -v "$pkg" >/dev/null 2>&1; then
+    failure "unable to install $pkg"
+    return 1
+  fi
+}
+
 
 #######
 # bin #
@@ -111,9 +130,15 @@ setup_fzf_install() {
 #######
 
 setup_zsh() {
+  run zsh:install install_zsh
   run zsh:config setup_zsh_config
   run zsh:syntax-highlighting setup_zsh_syntax_highlighting
   run zsh:prompt setup_zsh_prompt
+  run zsh:chsh setup_zsh_chsh
+}
+
+install_zsh() {
+  install-package zsh
 }
 
 setup_zsh_config() {
@@ -138,6 +163,20 @@ setup_zsh_prompt_repo() {
 setup_zsh_prompt_install() {
   link "${PURE_PROMPT_HOME}/pure.zsh" "${HOME}/.zfunctions/prompt_pure_setup"
   link "${PURE_PROMPT_HOME}/async.zsh" "${HOME}/.zfunctions/async"
+}
+
+setup_zsh_chsh() {
+  if [ "$(basename "$(get-current-shell)")" != zsh ]; then
+    chsh -s "$(command -v zsh)"
+  fi
+}
+
+get-current-shell() {
+  if command -v dscl; then
+    dscl . -read ~/ UserShell | sed 's/UserShell: //'
+  else
+    getent passwd "$USER" | cut -d : -f 7
+  fi
 }
 
 
@@ -165,7 +204,12 @@ setup_vim() {
 #######
 
 setup_git() {
+  run git:install install_git
   link "${PWD}/.gitconfig" ~/
+}
+
+install_git() {
+  install-package git
 }
 
 
@@ -173,21 +217,17 @@ setup_git() {
 # curl #
 ########
 
-setup_curl() {
-  if command -v curl >/dev/null 2>&1; then
-    return
-  fi
+install_curl() {
+  install-package curl
+}
 
-  if command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get install -y curl
-  elif command -v brew >/dev/null 2>&1; then
-    brew install curl
-  fi
 
-  if ! command -v curl >/dev/null 2>&1; then
-    failure "unable to install curl"
-    return 1
-  fi
+##########
+# python #
+##########
+
+setup_python() {
+  install-package python
 }
 
 
@@ -276,8 +316,9 @@ setup_autojump_install() {
 # run everything #
 ##################
 
+run python setup_python
 run bin setup_bin
-run curl setup_curl
+run curl install_curl
 run zsh setup_zsh
 run tmux setup_tmux
 run vim setup_vim
