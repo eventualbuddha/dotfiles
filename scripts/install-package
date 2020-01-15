@@ -37,6 +37,7 @@ if [ "${cmd}" = "install-package" ]; then
       --output - \
       "${tarball_url}" \
     | tar xz --strip-components 1 -C "${tmp_install_target}"
+    mkdir -p "$(dirname "${bin_install_target}")"
     mv "${tmp_install_target}" "${bin_install_target}"
     echo "✓ ${package} ${version} installed at ${bin_install_target}"
   fi
