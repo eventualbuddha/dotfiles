@@ -30,13 +30,14 @@ if [ "${cmd}" = "install-package" ]; then
     echo "✓ ${package} ${version} already installed at ${bin_install_target}"
   else
     echo "📦 installing ${package} ${version} at ${bin_install_target}"
-    mkdir -p "${bin_install_target}"
+    tmp_install_target=$(mktemp -d -t install-package.XXXXX)
     curl \
       --silent \
       --location \
       --output - \
       "${tarball_url}" \
-    | tar xz --strip-components 1 -C "${bin_install_target}"
+    | tar xz --strip-components 1 -C "${tmp_install_target}"
+    mv "${tmp_install_target}" "${bin_install_target}"
     echo "✓ ${package} ${version} installed at ${bin_install_target}"
   fi
 elif [ "${cmd}" = "uninstall-package" ]; then
