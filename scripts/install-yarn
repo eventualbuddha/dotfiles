@@ -47,7 +47,7 @@ if [ "${latest}" = "true" ]; then
   latest_yarn_install_url=$(curl \
     --location \
     --silent \
-    --max-redirs 1 \
+    --max-redirs 2 \
     --write-out %{url_effective} \
     --output /dev/null \
     https://yarnpkg.com/latest.tar.gz || echo)
