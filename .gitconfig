@@ -1,5 +1,3 @@
-[remote "origin"]
-fetch = +refs/pull/*:refs/remotes/origin/pull/*
 [commit]
 	gpgsign = true
 [user]
