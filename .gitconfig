@@ -3,5 +3,8 @@
 [user]
 	name = Brian Donovan
 	email = 1938+eventualbuddha@users.noreply.github.com
+[alias]
+	reauthor = commit --amend --no-edit --no-verify
+	wip = commit --no-verify -m WIP
 [merge]
 	conflictstyle = diff3
