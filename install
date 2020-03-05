@@ -246,6 +246,8 @@ setup_binstubs() {
   link "${PWD}/bin/npx" ~/bin/
   link "${PWD}/bin/yarn" ~/bin/
 
+  link "${PWD}/bin/pgdb" ~/bin/
+
   setup_version_files
 }
 
