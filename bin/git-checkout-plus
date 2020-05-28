@@ -7,7 +7,7 @@ git-default-branch() {
   local git_default_branch_file="${git_dir}/.git-default-branch"
 
   if [ ! -f "${git_default_branch_file}" ]; then
-    echo ${$(git symbolic-ref refs/remotes/origin/HEAD)#refs/remotes/origin/} > "${git_default_branch_file}"
+    git remote show origin | grep "HEAD branch" | cut -d ":" -f 2 > "${git_default_branch_file}"
   fi
 
   cat "${git_default_branch_file}"
