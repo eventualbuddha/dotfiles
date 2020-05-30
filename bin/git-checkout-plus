@@ -107,5 +107,9 @@ elif [[ "${1}" =~ '^https://github.com/([-_0-9a-zA-Z]+)/([-_0-9a-zA-Z]+)/pull/([
     fi
   fi
 else
-  git checkout "$@"
+  if git-branch-exists "$@"; then
+    git checkout "$@"
+  else
+    git checkout -b "$@"
+  fi
 fi
