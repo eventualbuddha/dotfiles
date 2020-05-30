@@ -49,6 +49,8 @@ ensure-git-remote-with-url() {
 
 if [ $# = 0 ]; then
   git checkout $(git-default-branch)
+elif [ "-" = "${1}" ]; then
+  git checkout -
 elif [[ "${1}" =~ '^https://github.com/([-_0-9a-zA-Z]+)/([-_0-9a-zA-Z]+)/pull/([0-9]+)$' ]]; then
   local owner="${match[1]}"
   local repo="${match[2]}"
