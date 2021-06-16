@@ -166,7 +166,7 @@ setup_zsh_prompt_install() {
 }
 
 setup_zsh_chsh() {
-  if [ "${USER}" != codespace ] && [ "$(basename "$(get-current-shell)")" != zsh ]; then
+  if [ "$(whoami)" != codespace ] && [ "$(basename "$(get-current-shell)")" != zsh ]; then
     chsh -s "$(command -v zsh)"
   fi
 }
@@ -175,7 +175,7 @@ get-current-shell() {
   if command -v dscl; then
     dscl . -read ~/ UserShell | sed 's/UserShell: //'
   else
-    getent passwd "$USER" | cut -d : -f 7
+    getent passwd "$(whoami)" | cut -d : -f 7
   fi
 }
 
