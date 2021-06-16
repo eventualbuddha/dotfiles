@@ -166,7 +166,7 @@ setup_zsh_prompt_install() {
 }
 
 setup_zsh_chsh() {
-  if [ "$(basename "$(get-current-shell)")" != zsh ]; then
+  if [ "${USER}" != codespace ] && [ "$(basename "$(get-current-shell)")" != zsh ]; then
     chsh -s "$(command -v zsh)"
   fi
 }
@@ -205,7 +205,11 @@ setup_vim() {
 
 setup_git() {
   run git:install install_git
-  link "${PWD}/.gitconfig" ~/
+  if [ "${USER}" = codespace ]; then
+    link "${PWD}/.gitconfig.codespace" ~/.gitconfig
+  else
+    link "${PWD}/.gitconfig" ~/
+  fi
 }
 
 install_git() {
