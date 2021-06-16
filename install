@@ -205,7 +205,7 @@ setup_vim() {
 
 setup_git() {
   run git:install install_git
-  if [ "${USER}" = codespace ]; then
+  if [ "$(whoami)" = codespace ]; then
     link "${PWD}/.gitconfig.codespace" ~/.gitconfig
   else
     link "${PWD}/.gitconfig" ~/
