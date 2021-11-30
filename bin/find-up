@@ -1,0 +1,20 @@
+#!/bin/sh
+
+dir=${PWD}
+filename=$1
+filepath=
+
+while true; do
+  filepath="${dir}/${filename}"
+
+  if [ -f "${filepath}" ]; then
+    echo "${filepath}"
+    exit 0
+  fi
+
+  dir="$(dirname "${dir}")"
+
+  if [ "${dir}" = "/" ]; then
+    exit 1
+  fi
+done

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+## Try to run pnpm via npx if it's installed.
+dir="${PWD}"
+pkg="$(basename $0)"
+
+while [ "${dir}" != "/" ]; do
+  package_json_path=$(cd "${dir}" && ~/bin/find-up package.json)
+
+  if [ -f "${package_json_path}" ]; then
+    version=$(~/bin/json-get "devDependencies.${pkg}" < "${package_json_path}")
+
+    if [ -n "${version}" ]; then
+      exec ~/bin/npx -q "${pkg}" "$@"
+    fi
+  fi
+
+  dir="$(dirname "${dir}")"
+done
+
+## Otherwise, run pnpm via node.
+exec ~/bin/run-bin-with-version-file node .node-version NODE_VERSION "${pkg}" -- "$@"
