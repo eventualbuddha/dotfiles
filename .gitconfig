@@ -1,5 +1,5 @@
 [commit]
-	gpgsign = true
+  #gpgsign = true
 [user]
 	name = Brian Donovan
 	email = 1938+eventualbuddha@users.noreply.github.com
@@ -10,3 +10,5 @@
 	autosquash = true
 [merge]
 	conflictstyle = diff3
+[receive]
+	denyCurrentBranch = ignore

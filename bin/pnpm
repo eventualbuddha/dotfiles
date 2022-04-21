@@ -1,8 +1,9 @@
 #!/bin/sh
 
-## Try to run pnpm via npx if it's installed.
+## Try to run pnpm via locally installed package
 dir="${PWD}"
-pkg="$(basename $0)"
+cli="$(basename $0)"
+pkg=pnpm
 
 while [ "${dir}" != "/" ]; do
   package_json_path=$(cd "${dir}" && ~/bin/find-up package.json)
@@ -11,7 +12,15 @@ while [ "${dir}" != "/" ]; do
     version=$(~/bin/json-get "devDependencies.${pkg}" < "${package_json_path}")
 
     if [ -n "${version}" ]; then
-      exec ~/bin/npx -q "${pkg}" "$@"
+      node_modules_path=$(cd $(dirname "${package_json_path}") && ~/bin/find-up node_modules)
+      bin_path=${node_modules_path}/.bin/${cli}
+
+      if [ ! -x "${bin_path}" ]; then
+        echo "warning: expected ${pkg}@${version} at ${bin_path}, falling back" >&2
+        break
+      fi
+
+      exec "${bin_path}" "$@"
     fi
   fi
 
@@ -19,4 +28,4 @@ while [ "${dir}" != "/" ]; do
 done
 
 ## Otherwise, run pnpm via node.
-exec ~/bin/run-bin-with-version-file node .node-version NODE_VERSION "${pkg}" -- "$@"
+exec ~/bin/run-bin-with-version-file node .node-version NODE_VERSION "${cli}" -- "$@"

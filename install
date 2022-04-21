@@ -259,6 +259,7 @@ setup_binstubs() {
 }
 
 setup_version_files() {
+  link "${PWD}/version-files/.tool-versions" ~/
   link "${PWD}/version-files/.node-version" ~/
   link "${PWD}/version-files/.yarn-version" ~/
 }
@@ -274,17 +275,51 @@ setup_commands() {
   link "${PWD}/bin/json-get" ~/bin/
 }
 
-#########
-# rbenv #
-#########
+########
+# asdf #
+########
 
-setup_rbenv() {
-  RBENV_HOME="${HOME}/.rbenv"
-  run rbenv:repo setup_rbenv_repo
+setup_asdf() {
+  ASDF_HOME="${HOME}/.asdf"
+  run asdf:repo setup_asdf_repo
+  run asdf:plugins:nodejs setup_asdf_plugin_nodejs
+  run asdf:plugins:python setup_asdf_plugin_python
+  run asdf:plugins:alias setup_asdf_plugin_alias
+  run asdf:install:python setup_asdf_install_python
+  run asdf:install:nodejs setup_asdf_install_nodejs
+  run asdf:aliases setup_asdf_aliases
 }
 
-setup_rbenv_repo() {
-  repo https://github.com/rbenv/rbenv.git "${RBENV_HOME}"
+setup_asdf_repo() {
+  # `repo` doesn't support branches
+  if [ ! -d "${ASDF_HOME}" ]; then
+    git clone https://github.com/asdf-vm/asdf.git "${ASDF_HOME}" --branch v0.9.0
+  fi
+}
+
+setup_asdf_plugin_nodejs() {
+  "${ASDF_HOME}/bin/asdf" plugin add nodejs 2>/dev/null || true
+}
+
+setup_asdf_plugin_python() {
+  "${ASDF_HOME}/bin/asdf" plugin add python 2>/dev/null || true
+}
+
+setup_asdf_plugin_alias() {
+  "${ASDF_HOME}/bin/asdf" plugin add alias 2>/dev/null || true
+}
+
+setup_asdf_install_python() {
+  "${ASDF_HOME}/bin/asdf" install python 3.10.4
+}
+
+setup_asdf_install_nodejs() {
+  "${ASDF_HOME}/bin/asdf" install nodejs lts
+}
+
+setup_asdf_aliases() {
+  "${ASDF_HOME}/bin/asdf" alias python --auto
+  "${ASDF_HOME}/bin/asdf" alias nodejs --auto
 }
 
 
@@ -316,7 +351,7 @@ setup_autojump_repo() {
 setup_autojump_install() {
   (
     cd "${AUTOJUMP_HOME}"
-    ./install.py
+    /usr/bin/python ./install.py
   )
 }
 
@@ -335,6 +370,6 @@ run git setup_git
 run fzf setup_fzf
 run vscode setup_vscode
 run autojump setup_autojump
-run rbenv setup_rbenv
+run asdf setup_asdf
 run binstubs setup_binstubs
 run commands setup_commands
