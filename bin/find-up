@@ -7,7 +7,7 @@ filepath=
 while true; do
   filepath="${dir}/${filename}"
 
-  if [ -f "${filepath}" ]; then
+  if [ -e "${filepath}" ]; then
     echo "${filepath}"
     exit 0
   fi
