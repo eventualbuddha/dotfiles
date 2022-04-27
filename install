@@ -2,13 +2,15 @@
 
 set -euo pipefail
 
-
 #########
 # setup #
 #########
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${DIR}"
+
+ASDF_DIR="${HOME}/.asdf"
+ASDF_PYTHON_VERSION=3.10.4
 
 if [ $(uname) = "Darwin" ]; then
   MACOS=1
@@ -226,15 +228,6 @@ install_curl() {
 }
 
 
-##########
-# python #
-##########
-
-setup_python() {
-  install-package python
-}
-
-
 ############
 # binstubs #
 ############
@@ -280,8 +273,8 @@ setup_commands() {
 ########
 
 setup_asdf() {
-  ASDF_HOME="${HOME}/.asdf"
   run asdf:repo setup_asdf_repo
+  source "${ASDF_DIR}/asdf.sh"
   run asdf:plugins:nodejs setup_asdf_plugin_nodejs
   run asdf:plugins:python setup_asdf_plugin_python
   run asdf:plugins:alias setup_asdf_plugin_alias
@@ -292,34 +285,34 @@ setup_asdf() {
 
 setup_asdf_repo() {
   # `repo` doesn't support branches
-  if [ ! -d "${ASDF_HOME}" ]; then
-    git clone https://github.com/asdf-vm/asdf.git "${ASDF_HOME}" --branch v0.9.0
+  if [ ! -d "${ASDF_DIR}" ]; then
+    git clone https://github.com/asdf-vm/asdf.git "${ASDF_DIR}" --branch v0.9.0
   fi
 }
 
 setup_asdf_plugin_nodejs() {
-  "${ASDF_HOME}/bin/asdf" plugin add nodejs 2>/dev/null || true
+  "${ASDF_DIR}/bin/asdf" plugin add nodejs 2>/dev/null || true
 }
 
 setup_asdf_plugin_python() {
-  "${ASDF_HOME}/bin/asdf" plugin add python 2>/dev/null || true
+  "${ASDF_DIR}/bin/asdf" plugin add python 2>/dev/null || true
 }
 
 setup_asdf_plugin_alias() {
-  "${ASDF_HOME}/bin/asdf" plugin add alias 2>/dev/null || true
+  "${ASDF_DIR}/bin/asdf" plugin add alias 2>/dev/null || true
 }
 
 setup_asdf_install_python() {
-  "${ASDF_HOME}/bin/asdf" install python 3.10.4
+  "${ASDF_DIR}/bin/asdf" install python "${ASDF_PYTHON_VERSION}"
 }
 
 setup_asdf_install_nodejs() {
-  "${ASDF_HOME}/bin/asdf" install nodejs lts
+  "${ASDF_DIR}/bin/asdf" install nodejs lts
 }
 
 setup_asdf_aliases() {
-  "${ASDF_HOME}/bin/asdf" alias python --auto
-  "${ASDF_HOME}/bin/asdf" alias nodejs --auto
+  "${ASDF_DIR}/bin/asdf" alias python --auto
+  "${ASDF_DIR}/bin/asdf" alias nodejs --auto
 }
 
 
@@ -351,7 +344,7 @@ setup_autojump_repo() {
 setup_autojump_install() {
   (
     cd "${AUTOJUMP_HOME}"
-    /usr/bin/python ./install.py
+    ASDF_PYTHON_VERSION=${ASDF_PYTHON_VERSION} "${ASDF_DIR}/bin/asdf" exec python ./install.py
   )
 }
 
@@ -360,7 +353,7 @@ setup_autojump_install() {
 # run everything #
 ##################
 
-run python setup_python
+run asdf setup_asdf
 run bin setup_bin
 run curl install_curl
 run zsh setup_zsh
@@ -370,6 +363,5 @@ run git setup_git
 run fzf setup_fzf
 run vscode setup_vscode
 run autojump setup_autojump
-run asdf setup_asdf
 run binstubs setup_binstubs
 run commands setup_commands
