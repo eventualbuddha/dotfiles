@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec ~/bin/run-bin-with-version-file yarn .yarn-version YARN_VERSION "$(basename ${0})" -- "$@"

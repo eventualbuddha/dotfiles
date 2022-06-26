@@ -236,16 +236,7 @@ setup_binstubs() {
   mkdir -p ~/bin
 
   link "${PWD}/bin/find-up" ~/bin/
-  link "${PWD}/bin/run-bin-with-version-file" ~/bin/
   link "${PWD}/bin/_semver.sh" ~/bin/
-
-  link "${PWD}/bin/node" ~/bin/
-  link "${PWD}/bin/npm" ~/bin/
-  link "${PWD}/bin/npx" ~/bin/
-  link "${PWD}/bin/pnpm" ~/bin/
-  link "${PWD}/bin/pnpx" ~/bin/
-  link "${PWD}/bin/yarn" ~/bin/
-
   link "${PWD}/bin/pgdb" ~/bin/
 
   setup_version_files
@@ -279,7 +270,6 @@ setup_asdf() {
   run asdf:plugins:python setup_asdf_plugin_python
   run asdf:plugins:alias setup_asdf_plugin_alias
   run asdf:install:python setup_asdf_install_python
-  run asdf:install:nodejs setup_asdf_install_nodejs
   run asdf:aliases setup_asdf_aliases
 }
 
@@ -304,10 +294,6 @@ setup_asdf_plugin_alias() {
 
 setup_asdf_install_python() {
   "${ASDF_DIR}/bin/asdf" install python "${ASDF_PYTHON_VERSION}"
-}
-
-setup_asdf_install_nodejs() {
-  "${ASDF_DIR}/bin/asdf" install nodejs lts
 }
 
 setup_asdf_aliases() {
@@ -349,6 +335,24 @@ setup_autojump_install() {
 }
 
 
+##########
+# nodejs #
+##########
+
+setup_nodejs() {
+  run nodejs:install setup_nodejs_install
+  run nodejs:corepack:enable setup_nodejs_enable_corepack
+}
+
+setup_nodejs_install() {
+  "${ASDF_DIR}/bin/asdf" install nodejs lts
+}
+
+setup_nodejs_enable_corepack() {
+  "${ASDF_DIR}/bin/asdf" exec corepack enable --install-directory "${HOME}/bin"
+}
+
+
 ##################
 # run everything #
 ##################
@@ -365,3 +369,4 @@ run vscode setup_vscode
 run autojump setup_autojump
 run binstubs setup_binstubs
 run commands setup_commands
+run nodejs setup_nodejs

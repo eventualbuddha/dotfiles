@@ -35,6 +35,8 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+alias serve='python3 -m http.server'
+
 
 ########
 # asdf #
