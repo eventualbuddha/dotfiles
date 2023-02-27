@@ -9,9 +9,6 @@ set -euo pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${DIR}"
 
-ASDF_DIR="${HOME}/.asdf"
-ASDF_PYTHON_VERSION=3.10.4
-
 if [ $(uname) = "Darwin" ]; then
   MACOS=1
 else
@@ -259,46 +256,22 @@ setup_commands() {
   link "${PWD}/bin/json-get" ~/bin/
 }
 
-########
-# asdf #
-########
+#######
+# rtx #
+#######
 
-setup_asdf() {
-  run asdf:repo setup_asdf_repo
-  source "${ASDF_DIR}/asdf.sh"
-  run asdf:plugins:nodejs setup_asdf_plugin_nodejs
-  run asdf:plugins:python setup_asdf_plugin_python
-  run asdf:plugins:alias setup_asdf_plugin_alias
-  run asdf:install:python setup_asdf_install_python
-  run asdf:aliases setup_asdf_aliases
+RTX_HOME="${HOME}/.local/share/rtx"
+
+setup_rtx() {
+  run rtx:install setup_rtx_install
 }
 
-setup_asdf_repo() {
-  # `repo` doesn't support branches
-  if [ ! -d "${ASDF_DIR}" ]; then
-    git clone https://github.com/asdf-vm/asdf.git "${ASDF_DIR}" --branch v0.9.0
+setup_rtx_install() {
+  if [ -d "${RTX_HOME}" ]; then
+    return
   fi
-}
 
-setup_asdf_plugin_nodejs() {
-  "${ASDF_DIR}/bin/asdf" plugin add nodejs 2>/dev/null || true
-}
-
-setup_asdf_plugin_python() {
-  "${ASDF_DIR}/bin/asdf" plugin add python 2>/dev/null || true
-}
-
-setup_asdf_plugin_alias() {
-  "${ASDF_DIR}/bin/asdf" plugin add alias 2>/dev/null || true
-}
-
-setup_asdf_install_python() {
-  "${ASDF_DIR}/bin/asdf" install python "${ASDF_PYTHON_VERSION}"
-}
-
-setup_asdf_aliases() {
-  "${ASDF_DIR}/bin/asdf" alias python --auto
-  "${ASDF_DIR}/bin/asdf" alias nodejs --auto
+  "${PWD}/scripts/rtx-install.sh"
 }
 
 
@@ -330,7 +303,7 @@ setup_autojump_repo() {
 setup_autojump_install() {
   (
     cd "${AUTOJUMP_HOME}"
-    ASDF_PYTHON_VERSION=${ASDF_PYTHON_VERSION} "${ASDF_DIR}/bin/asdf" exec python ./install.py
+    python ./install.py
   )
 }
 
@@ -345,11 +318,11 @@ setup_nodejs() {
 }
 
 setup_nodejs_install() {
-  "${ASDF_DIR}/bin/asdf" install nodejs lts
+  "${RTX_HOME}/bin/rtx" install nodejs
 }
 
 setup_nodejs_enable_corepack() {
-  "${ASDF_DIR}/bin/asdf" exec corepack enable --install-directory "${HOME}/bin"
+  "${RTX_HOME}/bin/rtx" exec nodejs -- corepack enable --install-directory "${HOME}/bin"
 }
 
 
@@ -357,7 +330,7 @@ setup_nodejs_enable_corepack() {
 # run everything #
 ##################
 
-run asdf setup_asdf
+run rtx setup_rtx
 run bin setup_bin
 run curl install_curl
 run zsh setup_zsh

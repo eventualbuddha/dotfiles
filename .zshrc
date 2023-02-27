@@ -38,18 +38,12 @@ alias ....='cd ../../..'
 alias serve='python3 -m http.server'
 
 
-########
-# asdf #
-########
+#######
+# rtx #
+#######
 
-ASDF_DIR="${HOME}/.asdf"
-# https://asdf-vm.com/guide/getting-started.html#_3-install-asdf
-source "${ASDF_DIR}/asdf.sh"
-# append completions to fpath
-fpath=(${ASDF_DIR}/completions $fpath)
-# initialise completions with ZSH's compinit
-autoload -Uz compinit && compinit
-
+RTX_HOME="${HOME}/.local/share/rtx"
+eval "$("${RTX_HOME}/bin/rtx" activate zsh)"
 
 #########################
 # History Configuration #

@@ -20,11 +20,11 @@ I want just the basics to get up and running with my usual software development 
 
 ### NodeJS
 
-This repo uses `asdf` for managing node versions.
+This repo uses `rtx` for managing node versions.
 
 ```sh
 # install a specific NodeJS version
-$ asdf install nodejs lts
+$ rtx install nodejs 18
 ```
 
 Write a version to a `.node-version` file or `.tool-versions` to use that
